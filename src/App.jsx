@@ -31,14 +31,15 @@ const IconHelp = () => (
 
 const App = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Tailwind CDNの注入
+    // 1. Tailwind CDNを注入
     const tailwindScript = document.createElement('script');
     tailwindScript.src = 'https://cdn.tailwindcss.com';
     document.head.appendChild(tailwindScript);
 
-    // カスタムスタイルとフォントの注入
+    // 2. カスタム設定を注入
     const style = document.createElement('style');
     style.innerHTML = `
       @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
@@ -49,8 +50,11 @@ const App = () => {
       
       .font-serif { font-family: 'Noto Serif JP', serif !important; }
       .font-sans { font-family: 'Noto Sans JP', sans-serif !important; }
-      
-      /* Tailwindのカスタム設定を上書き */
+    `;
+    document.head.appendChild(style);
+
+    // Tailwindの設定と準備完了を待つ
+    tailwindScript.onload = () => {
       window.tailwind.config = {
         theme: {
           extend: {
@@ -60,9 +64,10 @@ const App = () => {
             }
           }
         }
-      }
-    `;
-    document.head.appendChild(style);
+      };
+      // 少し待ってから表示（カクつき防止）
+      setTimeout(() => setIsReady(true), 100);
+    };
 
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
@@ -73,6 +78,11 @@ const App = () => {
       if (document.head.contains(tailwindScript)) document.head.removeChild(tailwindScript);
     };
   }, []);
+
+  // 準備ができるまで何も表示しない（文字だけになるのを防ぐ）
+  if (!isReady) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden">
@@ -159,7 +169,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Monet Intro Section (Restored) */}
+      {/* Monet Intro Section */}
       <section className="py-24 bg-slate-50 overflow-hidden text-slate-900">
         <div className="max-w-6xl mx-auto px-6">
             <div className="flex flex-col lg:flex-row items-center gap-16">
@@ -223,7 +233,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* FAQ Section (Restored) */}
+      {/* FAQ Section */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-3xl mx-auto px-6">
             <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
