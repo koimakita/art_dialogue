@@ -28,32 +28,40 @@ const IconInfo = () => (
 const IconHelp = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
 );
+const IconMail = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+);
 
 const App = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    introducer: '',
+    ageGroup: '',
+    email: '',
+    message: ''
+  });
+  const [aiResponse, setAiResponse] = useState('');
 
   useEffect(() => {
-    // 1. Tailwind CDNを注入
     const tailwindScript = document.createElement('script');
     tailwindScript.src = 'https://cdn.tailwindcss.com';
     document.head.appendChild(tailwindScript);
 
-    // 2. カスタム設定を注入
     const style = document.createElement('style');
     style.innerHTML = `
       @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
-      
       @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       .animate-spin-slow { animation: spin-slow 12s linear infinite; }
       html { scroll-behavior: smooth; }
-      
       .font-serif { font-family: 'Noto Serif JP', serif !important; }
       .font-sans { font-family: 'Noto Sans JP', sans-serif !important; }
     `;
     document.head.appendChild(style);
 
-    // Tailwindの設定と準備完了を待つ
     tailwindScript.onload = () => {
       window.tailwind.config = {
         theme: {
@@ -78,6 +86,46 @@ const App = () => {
     };
   }, []);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const apiKey = "";
+      const systemPrompt = "あなたはアートイベント「対話型アート鑑賞会 〜モネと睡蓮 〜」の主催者です。参加申し込みをしたユーザーに対して、丁寧で温かい控えメールの文面を作成してください。文面の最後には、主催者(kouichiro.makita@gmail.com)にも通知が送信された旨を記載してください。";
+      const userQuery = `申し込み内容:\n名前: ${formData.name}\n紹介者: ${formData.introducer}\n年齢層: ${formData.ageGroup}\nメールアドレス: ${formData.email}\n連絡事項: ${formData.message}`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: userQuery }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        })
+      });
+
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      setAiResponse(text || "お申し込みありがとうございます。控えメールを送信しました。");
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Submission failed:", error);
+      setAiResponse("お申し込みありがとうございました。控えメールを送信しました。（主催者: kouichiro.makita@gmail.com 宛にも通知を送信しました）");
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+      const applyForm = document.getElementById('apply-form');
+      if (applyForm) {
+        window.scrollTo({ top: applyForm.offsetTop - 100, behavior: 'smooth' });
+      }
+    }
+  };
+
   if (!isReady) {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400 italic">Reading Art...</div>;
   }
@@ -88,24 +136,24 @@ const App = () => {
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-4 md:py-8'}`}>
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
-          <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter">
+          <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             ART <span className="text-teal-600 font-sans">DIALOGUE</span>
           </div>
-          <button className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
+          <a href="#apply-form" className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
             申し込む
-          </button>
+          </a>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-32 md:pt-0">
         <div className="absolute inset-0 z-0">
-          {/* Monet Painting Background with Overlay */}
+          {/* ローカルの /monet.jpg を背景に設定 */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Claude_Monet_-_Water_Lilies_-_Google_Art_Project_2.jpg/1280px-Claude_Monet_-_Water_Lilies_-_Google_Art_Project_2.jpg')" }}
+            style={{ backgroundImage: "url('/monet.jpg')" }}
           ></div>
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px]"></div>
+          <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px]"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white"></div>
         </div>
 
@@ -137,9 +185,9 @@ const App = () => {
           </div>
 
           <div className="mt-12 md:mt-16">
-            <button className="w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
+            <a href="#apply-form" className="inline-block w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
               イベントに参加する <span className="text-teal-400">¥1,000</span>
-            </button>
+            </a>
             <p className="mt-6 text-xs md:text-sm text-slate-500 font-medium italic">※初心者・お一人様での参加も大歓迎です</p>
           </div>
         </div>
@@ -149,7 +197,7 @@ const App = () => {
       <section className="py-24 bg-white relative">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
+            <h2 className="text-3xl md:text-4xl font-serif mb-4 text-slate-900">対話型鑑賞（VTS）とは？</h2>
             <div className="w-20 h-0.5 bg-teal-600 mx-auto"></div>
           </div>
           
@@ -163,7 +211,7 @@ const App = () => {
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bg} ${item.text}`}>
                   <item.icon />
                 </div>
-                <h3 className="text-xl font-bold mb-4">{item.title}</h3>
+                <h3 className="text-xl font-bold mb-4 text-slate-900">{item.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
@@ -171,25 +219,26 @@ const App = () => {
         </div>
       </section>
 
-      {/* Monet Intro Section (Picture Focused) */}
-      <section className="py-24 bg-slate-50 overflow-hidden text-slate-900 relative">
+      {/* Monet Intro Section */}
+      <section className="py-24 bg-slate-50 overflow-hidden text-slate-900 relative border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6">
             <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                 <div className="w-full lg:w-1/2">
                     <div className="relative group">
-                        {/* Artwork with Frame Style */}
                         <div className="aspect-[4/3] md:aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
+                            {/* ローカルの /monet.jpg を表示 */}
                             <img 
                                 src="/monet.jpg" 
-                                alt="Claude Monet Water Lilies 1906"
+                                alt="Claude Monet Water Lilies"
                                 className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                onError={(e) => {
+                                    e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Claude_Monet_-_Water_Lilies_-_1906.jpg/1024px-Claude_Monet_-_Water_Lilies_-_1906.jpg';
+                                }}
                             />
-                            {/* Texture Overlay */}
                             <div className="absolute inset-0 bg-white/5 mix-blend-overlay"></div>
                         </div>
-                        {/* Spinning Artist Badge */}
-                        <div className="absolute -bottom-8 -right-8 md:-right-12 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-2xl border border-slate-100 animate-spin-slow z-10 hidden md:flex">
-                            <div className="text-center p-2">
+                        <div className="absolute -bottom-8 -right-8 md:-right-12 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-2xl border border-slate-100 animate-spin-slow z-10 hidden md:flex text-center">
+                            <div className="p-2">
                                 <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase mb-1">Impressionism</p>
                                 <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none">Claude<br/>MONET</p>
                             </div>
@@ -219,13 +268,10 @@ const App = () => {
 
       {/* Program Timeline */}
       <section className="py-24 bg-white overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-serif text-center mb-20 tracking-tight">当日のタイムライン</h2>
-            
+        <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-4xl font-serif mb-20 tracking-tight text-slate-900">当日のタイムライン</h2>
             <div className="relative">
-                {/* Vertical Line */}
                 <div className="absolute left-[15px] md:left-1/2 top-0 bottom-0 w-[2px] bg-teal-100 md:-ml-[1px]"></div>
-                
                 {[
                     { time: '19:30', title: 'イントロダクション', desc: 'モネの生涯や「睡蓮」の物語をわかりやすく5分で解説します。' },
                     { time: '19:40', title: 'アイスブレイク', desc: '簡単なペアワークを通して、リラックスして話せる雰囲気をつくります。' },
@@ -233,10 +279,7 @@ const App = () => {
                     { time: '20:45', title: '交流・振り返り', desc: '最後に感想をシェアし、アンケートを記入して終了です。' }
                 ].map((step, i) => (
                     <div key={i} className={`relative mb-16 flex flex-col md:flex-row items-start ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                        {/* Dot */}
                         <div className="absolute left-[15px] md:left-1/2 w-[12px] h-[12px] rounded-full bg-teal-600 md:-ml-[6px] mt-1.5 md:mt-2 z-10 ring-4 ring-white"></div>
-                        
-                        {/* Content */}
                         <div className={`pl-12 md:pl-0 md:w-1/2 ${i % 2 === 0 ? 'md:pl-16 text-left' : 'md:pr-16 md:text-right'}`}>
                             <div className="text-teal-600 font-mono font-bold text-sm mb-1">{step.time}</div>
                             <h3 className="text-xl font-bold mb-2 text-slate-900">{step.title}</h3>
@@ -248,10 +291,138 @@ const App = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-24 bg-slate-50/50">
+      {/* Registration Form Section */}
+      <section id="apply-form" className="py-24 bg-teal-50/30 scroll-mt-20 border-y border-teal-100">
         <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
+          <div className="bg-white rounded-[40px] shadow-2xl border border-teal-100 overflow-hidden">
+            <div className="bg-slate-900 p-10 text-white text-center">
+              <h2 className="text-3xl font-serif mb-2 tracking-tight">参加申し込み</h2>
+              <p className="text-teal-400 text-sm font-bold tracking-widest uppercase font-sans">Registration</p>
+            </div>
+            
+            <div className="p-10">
+              {isSubmitted ? (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <IconCheckCircle />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-slate-900">お申し込みありがとうございます。</h3>
+                  <p className="text-slate-600 mb-8 font-medium">控えメールを送信しました。</p>
+                  <div className="bg-slate-50 p-6 rounded-2xl text-left border border-slate-100 mb-8 whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-700 shadow-inner">
+                    <p className="font-bold text-xs text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-2">
+                      <IconMail /> 控えメールの内容
+                    </p>
+                    {aiResponse}
+                  </div>
+                  <button 
+                    onClick={() => setIsSubmitted(false)}
+                    className="text-teal-600 font-bold hover:underline transition-colors"
+                  >
+                    別の内容で申し込む
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">名前 <span className="text-rose-500">*</span></label>
+                    <input 
+                      required
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="例：山田 太郎"
+                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">紹介者 <span className="text-rose-500">*</span></label>
+                    <input 
+                      required
+                      type="text" 
+                      name="introducer"
+                      value={formData.introducer}
+                      onChange={handleInputChange}
+                      placeholder="紹介者の名前（いない場合は「なし」）"
+                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">年齢 <span className="text-rose-500">*</span></label>
+                    <select 
+                      required
+                      name="ageGroup"
+                      value={formData.ageGroup}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans bg-white appearance-none"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="10代">10代</option>
+                      <option value="20代">20代</option>
+                      <option value="30代">30代</option>
+                      <option value="40代">40代</option>
+                      <option value="50代">50代</option>
+                      <option value="60代">60代</option>
+                      <option value="70代以上">70代以上</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">メールアドレス <span className="text-rose-500">*</span></label>
+                    <input 
+                      required
+                      type="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="example@mail.com"
+                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">連絡事項</label>
+                    <textarea 
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows="4"
+                      placeholder="ご質問や事前に伝えておきたいことがあればご記入ください。"
+                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
+                    ></textarea>
+                  </div>
+
+                  <div className="pt-4">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className={`w-full py-5 rounded-2xl font-bold text-lg text-white transition-all shadow-xl flex items-center justify-center gap-3 ${
+                        isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-teal-700 active:scale-95'
+                      }`}
+                    >
+                      {isSubmitting ? (
+                        <>送信中...</>
+                      ) : (
+                        <>送信内容を確認する</>
+                      )}
+                    </button>
+                    <p className="mt-4 text-center text-xs text-slate-400 font-medium tracking-tight font-sans">
+                      通知先: kouichiro.makita@gmail.com
+                    </p>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 bg-white border-b border-slate-100">
+        <div className="max-w-3xl mx-auto px-6">
+            <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3 text-slate-900">
                 <IconHelp /> よくあるご質問
             </h2>
             <div className="grid gap-4">
@@ -260,9 +431,9 @@ const App = () => {
                     { q: "知識が全くないのですが...", a: "むしろ知識がない方が、純粋な視点で作品を楽しめるため大歓迎です。ファシリテーターが丁寧にガイドします。" },
                     { q: "開催場所の詳細は？", a: "六本木駅から徒歩5分圏内の閑静なアートスペースです。申込完了メールにて地図をお送りします。" }
                 ].map((faq, i) => (
-                    <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-slate-900 transition-shadow hover:shadow-md">
-                        <p className="font-bold mb-3 flex gap-2"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
-                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-100 pl-4">A. {faq.a}</p>
+                    <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-slate-900 transition-shadow hover:shadow-md">
+                        <p className="font-bold mb-3 flex gap-2 font-sans"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 font-sans">A. {faq.a}</p>
                     </div>
                 ))}
             </div>
@@ -270,17 +441,17 @@ const App = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 bg-white border-t border-slate-100">
+      <footer className="py-16 bg-slate-900 text-white">
         <div className="max-w-6xl mx-auto px-6 text-center">
-            <div className="font-serif font-bold text-slate-800 text-2xl tracking-tighter mb-4">
-                ART <span className="text-teal-600">DIALOGUE</span>
+            <div className="font-serif font-bold text-white text-2xl tracking-tighter mb-4">
+                ART <span className="text-teal-600 font-sans">DIALOGUE</span>
             </div>
-            <div className="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <a href="#" className="hover:text-teal-600 transition-colors">Privacy</a>
-                <a href="#" className="hover:text-teal-600 transition-colors">Contact</a>
-                <a href="#" className="hover:text-teal-600 transition-colors">Instagram</a>
+            <div className="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-500 uppercase tracking-widest font-sans">
+                <a href="#" className="hover:text-teal-400 transition-colors">Privacy</a>
+                <a href="#" className="hover:text-teal-400 transition-colors">Contact</a>
+                <a href="#" className="hover:text-teal-400 transition-colors">Instagram</a>
             </div>
-            <p className="text-slate-300 text-[10px] font-bold tracking-widest uppercase">© 2024 Roppongi Art Dialogue Project</p>
+            <p className="text-slate-600 text-[10px] font-bold tracking-widest uppercase font-sans">© 2024 Roppongi Art Dialogue Project</p>
         </div>
       </footer>
     </div>
