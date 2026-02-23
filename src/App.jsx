@@ -25,31 +25,52 @@ const IconSparkles = () => (
 const IconInfo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
 );
-const IconChevronRight = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+const IconHelp = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
 );
 
 const App = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    // スタイル注入
+    // Tailwind CDNの注入
+    const tailwindScript = document.createElement('script');
+    tailwindScript.src = 'https://cdn.tailwindcss.com';
+    document.head.appendChild(tailwindScript);
+
+    // カスタムスタイルとフォントの注入
     const style = document.createElement('style');
     style.innerHTML = `
       @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+      
       @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       .animate-spin-slow { animation: spin-slow 12s linear infinite; }
       html { scroll-behavior: smooth; }
+      
       .font-serif { font-family: 'Noto Serif JP', serif !important; }
       .font-sans { font-family: 'Noto Sans JP', sans-serif !important; }
+      
+      /* Tailwindのカスタム設定を上書き */
+      window.tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Noto Serif JP"', 'serif'],
+              sans: ['"Noto Sans JP"', 'sans-serif'],
+            }
+          }
+        }
+      }
     `;
     document.head.appendChild(style);
 
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (document.head.contains(style)) document.head.removeChild(style);
+      if (document.head.contains(tailwindScript)) document.head.removeChild(tailwindScript);
     };
   }, []);
 
@@ -60,7 +81,7 @@ const App = () => {
       <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6 md:py-8'}`}>
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
           <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter">
-            ART <span className="text-teal-600">DIALOGUE</span>
+            ART <span className="text-teal-600 font-sans">DIALOGUE</span>
           </div>
           <button className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
             申し込む
@@ -73,12 +94,13 @@ const App = () => {
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white/50 to-white/90"></div>
           <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[80%] rounded-full bg-teal-100/30 blur-[100px]"></div>
-          <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[70%] rounded-full bg-purple-100/20 blur-[100px]"></div>
+          <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[70%] rounded-full bg-purple-100/20 blur-[120px]"></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-teal-600/30 text-teal-700 text-[10px] md:text-xs tracking-widest uppercase font-bold rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
-            <span>知識ゼロから楽しむアート体験</span>
+            <IconSparkles />
+            <span className="ml-2">知識ゼロから楽しむアート体験</span>
           </div>
           
           <h1 className="text-4xl md:text-8xl font-serif mb-8 leading-[1.2] md:leading-tight tracking-tight text-slate-900">
@@ -87,7 +109,8 @@ const App = () => {
           </h1>
           
           <p className="text-base md:text-2xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto font-medium px-4">
-            知識はいりません。必要なのは「あなたの目」だけ。
+            知識はいりません。必要なのは「あなたの目」だけ。<br className="hidden md:block" />
+            巨匠モネの世界を、みんなで言葉にしながら旅しませんか？
           </p>
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm md:text-base font-semibold">
@@ -105,6 +128,7 @@ const App = () => {
             <button className="w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
               イベントに参加する <span className="text-teal-400">¥1,000</span>
             </button>
+            <p className="mt-6 text-xs md:text-sm text-slate-400 font-medium">※初心者・お一人様での参加も大歓迎です</p>
           </div>
         </div>
       </section>
@@ -135,6 +159,46 @@ const App = () => {
         </div>
       </section>
 
+      {/* Monet Intro Section (Restored) */}
+      <section className="py-24 bg-slate-50 overflow-hidden text-slate-900">
+        <div className="max-w-6xl mx-auto px-6">
+            <div className="flex flex-col lg:flex-row items-center gap-16">
+                <div className="w-full lg:w-1/2">
+                    <div className="relative">
+                        <div className="aspect-[4/5] bg-slate-200 rounded-[60px] shadow-2xl overflow-hidden flex items-center justify-center">
+                            <div className="text-center opacity-60">
+                                <p className="font-serif italic text-xl mb-4 text-slate-700">Water Lilies Series</p>
+                                <div className="text-6xl">🎨</div>
+                            </div>
+                        </div>
+                        <div className="absolute -top-6 -right-6 w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-xl border border-slate-100 animate-spin-slow">
+                            <div className="text-center p-2">
+                                <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase">Claude</p>
+                                <p className="text-lg font-serif font-bold">MONET</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="w-full lg:w-1/2">
+                    <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-tight">「光の画家」モネ。<br />なぜ彼は睡蓮を描き続けたのか？</h2>
+                    <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                        クロード・モネは、移ろいゆく光の色を捉えようとした印象派の巨匠です。晩年の彼は、自宅の庭に作った「水の庭」にある睡蓮を、250点以上も描き続けました。
+                    </p>
+                    <div className="space-y-4">
+                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100">
+                            <div className="text-teal-600 font-bold">Point 1</div>
+                            <p className="text-sm font-bold">刻一刻と変化する「水面の光」の表現</p>
+                        </div>
+                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100">
+                            <div className="text-teal-600 font-bold">Point 2</div>
+                            <p className="text-sm font-bold">形ではなく、空気感を描き出そうとした情熱</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
       {/* Program Timeline */}
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6">
@@ -159,11 +223,32 @@ const App = () => {
         </div>
       </section>
 
+      {/* FAQ Section (Restored) */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-6">
+            <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
+                <IconHelp /> よくあるご質問
+            </h2>
+            <div className="space-y-4">
+                {[
+                    { q: "一人での参加でも大丈夫ですか？", a: "はい。約7割の方がお一人様です。対話を通じて自然と会話が生まれます。" },
+                    { q: "知識が全くないのですが...", a: "むしろ知識がない方が、純粋な驚きや発見を楽しめるので大歓迎です。" },
+                    { q: "開催場所の詳細は？", a: "六本木駅から徒歩5分圏内のスペースです。申込完了後に地図をお送りします。" }
+                ].map((faq, i) => (
+                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-slate-900">
+                        <p className="font-bold mb-2 flex gap-2"><span className="text-teal-600">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6">A. {faq.a}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-12 bg-white border-t border-slate-200">
         <div className="max-w-6xl mx-auto px-6 text-center">
             <div className="font-serif font-bold text-slate-800 text-xl tracking-tighter mb-4">
-                ART <span className="text-teal-600">DIALOGUE</span>
+                ART <span className="text-teal-600 font-sans">DIALOGUE</span>
             </div>
             <p className="text-slate-400 text-xs font-medium">© 2024 六本木アート対話プロジェクト</p>
         </div>
