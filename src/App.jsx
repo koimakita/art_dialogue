@@ -65,7 +65,6 @@ const App = () => {
           }
         }
       };
-      // 少し待ってから表示（カクつき防止）
       setTimeout(() => setIsReady(true), 100);
     };
 
@@ -79,16 +78,15 @@ const App = () => {
     };
   }, []);
 
-  // 準備ができるまで何も表示しない（文字だけになるのを防ぐ）
   if (!isReady) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400">Loading...</div>;
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400 italic">Reading Art...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden">
       
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6 md:py-8'}`}>
+      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6 md:py-8'}`}>
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
           <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter">
             ART <span className="text-teal-600 font-sans">DIALOGUE</span>
@@ -101,34 +99,38 @@ const App = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 md:pt-0">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white/50 to-white/90"></div>
-          <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[80%] rounded-full bg-teal-100/30 blur-[100px]"></div>
-          <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[70%] rounded-full bg-purple-100/20 blur-[120px]"></div>
+        <div className="absolute inset-0 z-0">
+          {/* Monet Painting Background with Overlay */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1600')" }}
+          ></div>
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white"></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-teal-600/30 text-teal-700 text-[10px] md:text-xs tracking-widest uppercase font-bold rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-teal-600/30 text-teal-700 text-[10px] md:text-xs tracking-widest uppercase font-bold rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
             <IconSparkles />
             <span className="ml-2">知識ゼロから楽しむアート体験</span>
           </div>
           
-          <h1 className="text-4xl md:text-8xl font-serif mb-8 leading-[1.2] md:leading-tight tracking-tight text-slate-900">
+          <h1 className="text-5xl md:text-8xl font-serif mb-8 leading-[1.2] md:leading-tight tracking-tight text-slate-900 drop-shadow-sm">
             対話型アート<br className="md:hidden" />鑑賞会<br />
-            <span className="italic text-teal-600 block mt-2 md:inline md:mt-0">〜モネと睡蓮〜</span>
+            <span className="italic text-teal-700 block mt-2 md:inline md:mt-0">〜モネと睡蓮〜</span>
           </h1>
           
-          <p className="text-base md:text-2xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto font-medium px-4">
+          <p className="text-lg md:text-2xl text-slate-700 mb-10 leading-relaxed max-w-2xl mx-auto font-medium px-4">
             知識はいりません。必要なのは「あなたの目」だけ。<br className="hidden md:block" />
             巨匠モネの世界を、みんなで言葉にしながら旅しませんか？
           </p>
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm md:text-base font-semibold">
-            <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
+            <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
               <IconCalendar />
               <span>3/19(木) 19:30 - 21:00</span>
             </div>
-            <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
+            <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
               <IconMapPin />
               <span>六本木駅周辺</span>
             </div>
@@ -138,7 +140,7 @@ const App = () => {
             <button className="w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
               イベントに参加する <span className="text-teal-400">¥1,000</span>
             </button>
-            <p className="mt-6 text-xs md:text-sm text-slate-400 font-medium">※初心者・お一人様での参加も大歓迎です</p>
+            <p className="mt-6 text-xs md:text-sm text-slate-500 font-medium">※初心者・お一人様での参加も大歓迎です</p>
           </div>
         </div>
       </section>
@@ -148,16 +150,16 @@ const App = () => {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
-            <div className="w-20 h-1 bg-teal-600 mx-auto"></div>
+            <div className="w-20 h-0.5 bg-teal-600 mx-auto"></div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: IconMessage, title: "知識は不要", desc: "歴史や技法を覚える必要はありません。「何が見えるか」を話すことから始まります。", bg: "bg-teal-100", text: "text-teal-600" },
-              { icon: IconSparkles, title: "新しい発見", desc: "自分以外の人の言葉を聞くことで、「そんな見方があったのか！」という驚きに出会えます。", bg: "bg-blue-100", text: "text-blue-600" },
-              { icon: IconInfo, title: "正解はない", desc: "アートには1つの正解はありません。あなたの感じたことが、そのまま作品の一部になります。", bg: "bg-purple-100", text: "text-purple-600" }
+              { icon: IconMessage, title: "知識は不要", desc: "歴史や技法を覚える必要はありません。「何が見えるか」を話すことから始まります。", bg: "bg-teal-50", text: "text-teal-600" },
+              { icon: IconSparkles, title: "新しい発見", desc: "自分以外の人の言葉を聞くことで、「そんな見方があったのか！」という驚きに出会えます。", bg: "bg-blue-50", text: "text-blue-600" },
+              { icon: IconInfo, title: "正解はない", desc: "アートには1つの正解はありません。あなたの感じたことが、そのまま作品の一部になります。", bg: "bg-purple-50", text: "text-purple-600" }
             ].map((item, i) => (
-              <div key={i} className="p-8 bg-slate-50 rounded-[32px] border border-slate-100 hover:shadow-xl transition-all">
+              <div key={i} className="p-8 bg-slate-50/50 rounded-[40px] border border-slate-100 hover:shadow-xl transition-all">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bg} ${item.text}`}>
                   <item.icon />
                 </div>
@@ -169,39 +171,48 @@ const App = () => {
         </div>
       </section>
 
-      {/* Monet Intro Section */}
-      <section className="py-24 bg-slate-50 overflow-hidden text-slate-900">
+      {/* Monet Intro Section (Picture Focused) */}
+      <section className="py-24 bg-slate-50 overflow-hidden text-slate-900 relative">
         <div className="max-w-6xl mx-auto px-6">
-            <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                 <div className="w-full lg:w-1/2">
-                    <div className="relative">
-                        <div className="aspect-[4/5] bg-slate-200 rounded-[60px] shadow-2xl overflow-hidden flex items-center justify-center">
-                            <div className="text-center opacity-60">
-                                <p className="font-serif italic text-xl mb-4 text-slate-700">Water Lilies Series</p>
-                                <div className="text-6xl">🎨</div>
-                            </div>
+                    <div className="relative group">
+                        {/* Artwork with Frame Style */}
+                        <div className="aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
+                            <img 
+                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Claude_Monet_-_Water_Lilies_-_1906.jpg/1024px-Claude_Monet_-_Water_Lilies_-_1906.jpg" 
+                                alt="Claude Monet Water Lilies 1906"
+                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                onError={(e) => {
+                                    e.target.src = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800';
+                                }}
+                            />
+                            {/* Texture Overlay */}
+                            <div className="absolute inset-0 bg-white/5 mix-blend-overlay"></div>
                         </div>
-                        <div className="absolute -top-6 -right-6 w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-xl border border-slate-100 animate-spin-slow">
+                        {/* Spinning Artist Badge */}
+                        <div className="absolute -bottom-8 -right-8 md:-right-12 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-2xl border border-slate-100 animate-spin-slow z-10 hidden md:flex">
                             <div className="text-center p-2">
-                                <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase">Claude</p>
-                                <p className="text-lg font-serif font-bold">MONET</p>
+                                <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase mb-1">Impressionism</p>
+                                <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none">Claude<br/>MONET</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="w-full lg:w-1/2">
+                    <div className="inline-block px-3 py-1 bg-teal-100 text-teal-700 text-[10px] font-bold tracking-widest uppercase rounded-full mb-6">About the Artist</div>
                     <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-tight">「光の画家」モネ。<br />なぜ彼は睡蓮を描き続けたのか？</h2>
-                    <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                    <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">
                         クロード・モネは、移ろいゆく光の色を捉えようとした印象派の巨匠です。晩年の彼は、自宅の庭に作った「水の庭」にある睡蓮を、250点以上も描き続けました。
                     </p>
                     <div className="space-y-4">
-                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <div className="text-teal-600 font-bold">Point 1</div>
-                            <p className="text-sm font-bold">刻一刻と変化する「水面の光」の表現</p>
+                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
+                            <div className="text-teal-600 font-bold text-lg">01</div>
+                            <p className="text-sm md:text-base font-bold text-slate-700">刻一刻と変化する「水面の光」の表現</p>
                         </div>
-                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <div className="text-teal-600 font-bold">Point 2</div>
-                            <p className="text-sm font-bold">形ではなく、空気感を描き出そうとした情熱</p>
+                        <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
+                            <div className="text-teal-600 font-bold text-lg">02</div>
+                            <p className="text-sm md:text-base font-bold text-slate-700">形ではなく、空気感を描き出そうとした情熱</p>
                         </div>
                     </div>
                 </div>
@@ -212,20 +223,20 @@ const App = () => {
       {/* Program Timeline */}
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-serif text-center mb-16">当日の流れ</h2>
+            <h2 className="text-3xl md:text-4xl font-serif text-center mb-20 tracking-tight">当日のタイムライン</h2>
             <div className="relative border-l-2 border-teal-100 ml-4 md:ml-0 md:left-1/2">
                 {[
-                    { time: '19:30', title: 'イントロダクション', desc: 'モネの生涯や「睡蓮」の物語を5分で解説します。' },
-                    { time: '19:40', title: 'アイスブレイク', desc: 'リラックスして話せる雰囲気をつくります。' },
-                    { time: '19:55', title: '対話型鑑賞', desc: '2つの作品を、グループでじっくり紐解きます。' },
-                    { time: '20:45', title: '交流・振り返り', desc: '気づきを共有し、アンケートを記入します。' }
+                    { time: '19:30', title: 'イントロダクション', desc: 'モネの生涯や「睡蓮」の物語をわかりやすく5分で解説します。' },
+                    { time: '19:40', title: 'アイスブレイク', desc: '簡単なペアワークを通して、リラックスして話せる雰囲気をつくります。' },
+                    { time: '19:55', title: '対話型鑑賞', desc: '選りすぐりの2つの作品を、グループでじっくり紐解きます。' },
+                    { time: '20:45', title: '交流・振り返り', desc: '最後に感想をシェアし、アンケートを記入して終了です。' }
                 ].map((step, i) => (
-                    <div key={i} className={`relative mb-12 flex flex-col md:flex-row items-start ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
+                    <div key={i} className={`relative mb-16 flex flex-col md:flex-row items-start ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
                         <div className="absolute left-[-9px] md:left-1/2 w-4 h-4 rounded-full bg-teal-600 border-4 border-white shadow-sm md:-translate-x-1/2"></div>
                         <div className={`pl-8 md:w-1/2 ${i % 2 === 0 ? 'md:pl-12 text-left' : 'md:pr-12 md:text-right md:pl-0'}`}>
                             <div className="text-teal-600 font-mono font-bold text-sm mb-1">{step.time}</div>
-                            <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                            <p className="text-sm text-slate-500">{step.desc}</p>
+                            <h3 className="text-xl font-bold mb-2 text-slate-900">{step.title}</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
                         </div>
                     </div>
                 ))}
@@ -234,20 +245,20 @@ const App = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-slate-50">
+      <section className="py-24 bg-slate-50/50">
         <div className="max-w-3xl mx-auto px-6">
             <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
                 <IconHelp /> よくあるご質問
             </h2>
-            <div className="space-y-4">
+            <div className="grid gap-4">
                 {[
-                    { q: "一人での参加でも大丈夫ですか？", a: "はい。約7割の方がお一人様です。対話を通じて自然と会話が生まれます。" },
-                    { q: "知識が全くないのですが...", a: "むしろ知識がない方が、純粋な驚きや発見を楽しめるので大歓迎です。" },
-                    { q: "開催場所の詳細は？", a: "六本木駅から徒歩5分圏内のスペースです。申込完了後に地図をお送りします。" }
+                    { q: "一人での参加でも大丈夫ですか？", a: "はい。参加者の約7割がお一人様です。対話型鑑賞のワークを通じて自然と会話が生まれます。" },
+                    { q: "知識が全くないのですが...", a: "むしろ知識がない方が、純粋な視点で作品を楽しめるため大歓迎です。ファシリテーターが丁寧にガイドします。" },
+                    { q: "開催場所の詳細は？", a: "六本木駅から徒歩5分圏内の閑静なアートスペースです。申込完了メールにて地図をお送りします。" }
                 ].map((faq, i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-slate-900">
-                        <p className="font-bold mb-2 flex gap-2"><span className="text-teal-600">Q.</span> {faq.q}</p>
-                        <p className="text-sm text-slate-600 leading-relaxed ml-6">A. {faq.a}</p>
+                    <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-slate-900 transition-shadow hover:shadow-md">
+                        <p className="font-bold mb-3 flex gap-2"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-100 pl-4">A. {faq.a}</p>
                     </div>
                 ))}
             </div>
@@ -255,12 +266,17 @@ const App = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-slate-200">
+      <footer className="py-16 bg-white border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6 text-center">
-            <div className="font-serif font-bold text-slate-800 text-xl tracking-tighter mb-4">
-                ART <span className="text-teal-600 font-sans">DIALOGUE</span>
+            <div className="font-serif font-bold text-slate-800 text-2xl tracking-tighter mb-4">
+                ART <span className="text-teal-600">DIALOGUE</span>
             </div>
-            <p className="text-slate-400 text-xs font-medium">© 2024 六本木アート対話プロジェクト</p>
+            <div className="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <a href="#" className="hover:text-teal-600 transition-colors">Privacy</a>
+                <a href="#" className="hover:text-teal-600 transition-colors">Contact</a>
+                <a href="#" className="hover:text-teal-600 transition-colors">Instagram</a>
+            </div>
+            <p className="text-slate-300 text-[10px] font-bold tracking-widest uppercase">© 2024 Roppongi Art Dialogue Project</p>
         </div>
       </footer>
     </div>
