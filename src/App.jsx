@@ -20,7 +20,7 @@ const IconMessage = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
 );
 const IconSparkles = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
 );
 const IconInfo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -86,27 +86,27 @@ const App = () => {
     <div className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden">
       
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6 md:py-8'}`}>
+      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-4 md:py-8'}`}>
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
           <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter">
             ART <span className="text-teal-600 font-sans">DIALOGUE</span>
           </div>
-          <button className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
+          <button className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
             申し込む
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20 md:pt-0">
+      <section className="relative min-h-screen flex items-center justify-center pt-32 md:pt-0">
         <div className="absolute inset-0 z-0">
           {/* Monet Painting Background with Overlay */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1600')" }}
+            style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Claude_Monet_-_Water_Lilies_-_Google_Art_Project_2.jpg/1280px-Claude_Monet_-_Water_Lilies_-_Google_Art_Project_2.jpg')" }}
           ></div>
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white"></div>
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white"></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
@@ -140,7 +140,7 @@ const App = () => {
             <button className="w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
               イベントに参加する <span className="text-teal-400">¥1,000</span>
             </button>
-            <p className="mt-6 text-xs md:text-sm text-slate-500 font-medium">※初心者・お一人様での参加も大歓迎です</p>
+            <p className="mt-6 text-xs md:text-sm text-slate-500 font-medium italic">※初心者・お一人様での参加も大歓迎です</p>
           </div>
         </div>
       </section>
@@ -178,14 +178,11 @@ const App = () => {
                 <div className="w-full lg:w-1/2">
                     <div className="relative group">
                         {/* Artwork with Frame Style */}
-                        <div className="aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
+                        <div className="aspect-[4/3] md:aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
                             <img 
                                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Claude_Monet_-_Water_Lilies_-_1906.jpg/1024px-Claude_Monet_-_Water_Lilies_-_1906.jpg" 
                                 alt="Claude Monet Water Lilies 1906"
                                 className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                onError={(e) => {
-                                    e.target.src = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800';
-                                }}
                             />
                             {/* Texture Overlay */}
                             <div className="absolute inset-0 bg-white/5 mix-blend-overlay"></div>
@@ -221,10 +218,14 @@ const App = () => {
       </section>
 
       {/* Program Timeline */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-4xl mx-auto px-6">
             <h2 className="text-3xl md:text-4xl font-serif text-center mb-20 tracking-tight">当日のタイムライン</h2>
-            <div className="relative border-l-2 border-teal-100 ml-4 md:ml-0 md:left-1/2">
+            
+            <div className="relative">
+                {/* Vertical Line */}
+                <div className="absolute left-[15px] md:left-1/2 top-0 bottom-0 w-[2px] bg-teal-100 md:-ml-[1px]"></div>
+                
                 {[
                     { time: '19:30', title: 'イントロダクション', desc: 'モネの生涯や「睡蓮」の物語をわかりやすく5分で解説します。' },
                     { time: '19:40', title: 'アイスブレイク', desc: '簡単なペアワークを通して、リラックスして話せる雰囲気をつくります。' },
@@ -232,11 +233,14 @@ const App = () => {
                     { time: '20:45', title: '交流・振り返り', desc: '最後に感想をシェアし、アンケートを記入して終了です。' }
                 ].map((step, i) => (
                     <div key={i} className={`relative mb-16 flex flex-col md:flex-row items-start ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                        <div className="absolute left-[-9px] md:left-1/2 w-4 h-4 rounded-full bg-teal-600 border-4 border-white shadow-sm md:-translate-x-1/2"></div>
-                        <div className={`pl-8 md:w-1/2 ${i % 2 === 0 ? 'md:pl-12 text-left' : 'md:pr-12 md:text-right md:pl-0'}`}>
+                        {/* Dot */}
+                        <div className="absolute left-[15px] md:left-1/2 w-[12px] h-[12px] rounded-full bg-teal-600 md:-ml-[6px] mt-1.5 md:mt-2 z-10 ring-4 ring-white"></div>
+                        
+                        {/* Content */}
+                        <div className={`pl-12 md:pl-0 md:w-1/2 ${i % 2 === 0 ? 'md:pl-16 text-left' : 'md:pr-16 md:text-right'}`}>
                             <div className="text-teal-600 font-mono font-bold text-sm mb-1">{step.time}</div>
                             <h3 className="text-xl font-bold mb-2 text-slate-900">{step.title}</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                            <p className="text-sm text-slate-500 leading-relaxed max-w-sm md:ml-0 md:mr-0 inline-block">{step.desc}</p>
                         </div>
                     </div>
                 ))}
