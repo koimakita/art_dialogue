@@ -51,6 +51,11 @@ const App = () => {
     tailwindScript.src = 'https://cdn.tailwindcss.com';
     document.head.appendChild(tailwindScript);
 
+    // EmailJSのSDKを読み込む
+    const emailjsScript = document.createElement('script');
+    emailjsScript.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+    document.head.appendChild(emailjsScript);
+
     const style = document.createElement('style');
     style.innerHTML = `
       @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
@@ -83,6 +88,7 @@ const App = () => {
       window.removeEventListener('scroll', handleScroll);
       if (document.head.contains(style)) document.head.removeChild(style);
       if (document.head.contains(tailwindScript)) document.head.removeChild(tailwindScript);
+      if (document.head.contains(emailjsScript)) document.head.removeChild(emailjsScript);
     };
   }, []);
 
@@ -96,11 +102,12 @@ const App = () => {
     setIsSubmitting(true);
 
     try {
+      // 1. まず Gemini API で控えメールの文章を生成する
       const apiKey = "";
-      const systemPrompt = "あなたはアートイベント「対話型アート鑑賞会 〜モネと睡蓮 〜」の主催者です。参加申し込みをしたユーザーに対して、丁寧で温かい控えメールの文面を作成してください。文面の最後には、主催者(kouichiro.makita@gmail.com)にも通知が送信された旨を記載してください。";
+      const systemPrompt = "あなたはアートイベント「対話型アート鑑賞会 〜モネと睡蓮 〜」の主催者です。参加申し込みをしたユーザーに対して、丁寧で温かい控えメールの文面を日本語で作成してください。";
       const userQuery = `申し込み内容:\n名前: ${formData.name}\n紹介者: ${formData.introducer}\n年齢層: ${formData.ageGroup}\nメールアドレス: ${formData.email}\n連絡事項: ${formData.message}`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+      const aiResponseRaw = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,13 +116,32 @@ const App = () => {
         })
       });
 
-      const result = await response.json();
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      setAiResponse(text || "お申し込みありがとうございます。控えメールを送信しました。");
+      const result = await aiResponseRaw.json();
+      const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "お申し込みありがとうございました。";
+      setAiResponse(generatedText);
+
+      // 2. 実際にメールを送信する (EmailJS を使用)
+      // 注意: 下記の 'YOUR_SERVICE_ID' などを自分の ID に書き換える必要があります。
+      if (window.emailjs) {
+        // emailjs.init("YOUR_PUBLIC_KEY"); // ここにあなたのPublic Keyを入れる
+        // await emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+        //   to_email: formData.email,
+        //   admin_email: "kouichiro.makita@gmail.com",
+        //   from_name: "Art Dialogue 主催者",
+        //   user_name: formData.name,
+        //   user_email: formData.email,
+        //   introducer: formData.introducer,
+        //   age: formData.ageGroup,
+        //   message_body: formData.message,
+        //   ai_generated_content: generatedText
+        // });
+        console.log("Email sending logic ready. Please set up EmailJS keys.");
+      }
+
       setIsSubmitted(true);
     } catch (error) {
       console.error("Submission failed:", error);
-      setAiResponse("お申し込みありがとうございました。控えメールを送信しました。（主催者: kouichiro.makita@gmail.com 宛にも通知を送信しました）");
+      setAiResponse("お申し込みありがとうございました。画面上での控え表示となります。（実際のメール配送にはEmailJSの設定が必要です）");
       setIsSubmitted(true);
     } finally {
       setIsSubmitting(false);
@@ -148,7 +174,6 @@ const App = () => {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-32 md:pt-0">
         <div className="absolute inset-0 z-0">
-          {/* ローカルの /monet.jpg を背景に設定 */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url('/monet.jpg')" }}
@@ -226,7 +251,6 @@ const App = () => {
                 <div className="w-full lg:w-1/2">
                     <div className="relative group">
                         <div className="aspect-[4/3] md:aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
-                            {/* ローカルの /monet.jpg を表示 */}
                             <img 
                                 src="/monet.jpg" 
                                 alt="Claude Monet Water Lilies"
