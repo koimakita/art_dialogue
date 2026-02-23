@@ -180,7 +180,7 @@ const App = () => {
                         {/* Artwork with Frame Style */}
                         <div className="aspect-[4/3] md:aspect-[4/5] bg-slate-100 rounded-lg shadow-2xl overflow-hidden relative ring-8 ring-white">
                             <img 
-                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Claude_Monet_-_Water_Lilies_-_1906.jpg/1024px-Claude_Monet_-_Water_Lilies_-_1906.jpg" 
+                                src="/monet.jpg" 
                                 alt="Claude Monet Water Lilies 1906"
                                 className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                             />
