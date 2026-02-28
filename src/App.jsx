@@ -46,7 +46,7 @@ const App = () => {
 
   const MAP_URL = "https://maps.app.goo.gl/eiuerk9SsZFzgdep9";
   
-  // イベント詳細
+  // イベント詳細 (2026/3/15 Sun)
   const EVENT_DETAILS = {
     title: "対話型アート鑑賞会〜モネと睡蓮〜",
     location: "BIRTH LAB/WORK 麻布十番",
@@ -212,7 +212,7 @@ const App = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm md:text-base font-semibold">
             <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
               <IconCalendar />
-              <span>3/15(土) 10:00 - 12:00</span>
+              <span>3/15(日) 10:00 - 12:00</span>
             </div>
             <a 
               href={MAP_URL}
@@ -235,14 +235,14 @@ const App = () => {
       </section>
 
       {/* Concept Section */}
-      <section className="py-24 bg-white relative text-slate-900">
+      <section className="py-24 bg-white relative text-slate-900 text-center">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
             <div className="w-20 h-0.5 bg-teal-600 mx-auto"></div>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: IconMessage, title: "知識は不要", desc: "歴史や技法を覚える必要はありません。「何が見えるか」を話すことから始まります。", bg: "bg-teal-50", text: "text-teal-600" },
               { icon: IconSparkles, title: "新しい発見", desc: "自分以外の人の言葉を聞くことで、「そんな見方があったのか！」という驚きに出会えます。", bg: "bg-blue-50", text: "text-blue-600" },
@@ -369,7 +369,7 @@ const App = () => {
                             <IconCalendar />
                             <div>
                                 <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold">Date & Time</p>
-                                <p className="text-lg font-medium">3/15 (土) 10:00 - 12:00</p>
+                                <p className="text-lg font-medium">3/15 (日) 10:00 - 12:00</p>
                                 
                                 {/* カレンダー登録ボタン (モバイル対応済) */}
                                 <div className="mt-4 flex flex-wrap gap-2">
@@ -446,11 +446,11 @@ const App = () => {
             <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
                 <IconHelp /> よくあるご質問
             </h2>
-            <div className="grid gap-4">
+            <div className="grid gap-4 text-left">
                 {faqItems.map((faq, i) => (
                     <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-shadow hover:shadow-md font-sans">
-                        <p className="font-bold mb-3 flex gap-2 text-left"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
-                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 text-left">A. {faq.a}</p>
+                        <p className="font-bold mb-3 flex gap-2"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4">A. {faq.a}</p>
                     </div>
                 ))}
             </div>
@@ -498,7 +498,7 @@ const App = () => {
             <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <IconSparkles />
             </div>
-            <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 tracking-tight">Coming Soon</h3>
+            <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 tracking-tight text-center">Coming Soon</h3>
             <p className="text-slate-500 text-sm font-medium leading-relaxed text-center">
               現在、準備中です。<br />公開までしばらくお待ちください。
             </p>
