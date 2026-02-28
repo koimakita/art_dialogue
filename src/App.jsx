@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-// アイコンをインラインSVGとして定義（外部ライブラリ不要）
+// アイコンをインラインSVGとして定義
 const IconCalendar = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
 );
@@ -28,33 +28,48 @@ const IconInfo = () => (
 const IconHelp = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
 );
-const IconMail = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+const IconExternalLink = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 22 3 22 10"/><line x1="10" y1="14" x2="22" y2="2"/></svg>
+);
+const IconX = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
 
 const App = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    introducer: '',
-    ageGroup: '',
-    email: '',
-    message: ''
-  });
-  const [aiResponse, setAiResponse] = useState('');
+  const [showComingSoon, setShowComingSoon] = useState(false);
+  const [activeTimelineStep, setActiveTimelineStep] = useState(0);
+
+  const MAP_URL = "https://maps.app.goo.gl/eiuerk9SsZFzgdep9";
+
+  const timelineSteps = [
+    { time: '10:00', title: '自己紹介/アイスブレイク', desc: 'お互いを知ることでリラックスして話せる雰囲気をつくります。' },
+    { time: '10:10', title: 'イントロダクション', desc: 'モネの生涯や作品の物語をわかりやすく10分で解説します。' },
+    { time: '10:20', title: '対話型鑑賞', desc: '選りすぐりの2つの作品を、グループでじっくり紐解きます。' },
+    { time: '11:45', title: '交流・振り返り', desc: '最後に感想をシェアし、アンケートを記入して終了です。' }
+  ];
+
+  const faqItems = [
+    { 
+      q: "一人での参加でも大丈夫ですか？", 
+      a: "はい。心配は不要です。対話型鑑賞のワークを通じて自然と会話が生まれます。" 
+    },
+    { 
+      q: "開催場所は分かりやすいですか？", 
+      a: "麻布十番駅から徒歩圏内の「BIRTH LAB」にて開催いたします。詳細はgoogle Mapリンクからご確認ください。" 
+    },
+    { 
+      q: "知識が全くないのですが...", 
+      a: "むしろ知識がない方が、純粋な視点で作品を楽しめるため大歓迎です。ファシリテーターが丁寧にガイドします。" 
+    }
+  ];
 
   useEffect(() => {
+    // Tailwind CDNの注入
     const tailwindScript = document.createElement('script');
     tailwindScript.src = 'https://cdn.tailwindcss.com';
     document.head.appendChild(tailwindScript);
-
-    // EmailJSのSDKを読み込む
-    const emailjsScript = document.createElement('script');
-    emailjsScript.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-    document.head.appendChild(emailjsScript);
 
     const style = document.createElement('style');
     style.innerHTML = `
@@ -64,6 +79,13 @@ const App = () => {
       html { scroll-behavior: smooth; }
       .font-serif { font-family: 'Noto Serif JP', serif !important; }
       .font-sans { font-family: 'Noto Sans JP', sans-serif !important; }
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.4s ease-out forwards;
+      }
     `;
     document.head.appendChild(style);
 
@@ -83,77 +105,36 @@ const App = () => {
 
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
+
+    // タイムラインの監視ロジック
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -40% 0px',
+      threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.getAttribute('data-index'));
+          setActiveTimelineStep(index);
+        }
+      });
+    }, observerOptions);
+
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach(item => observer.observe(item));
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (document.head.contains(style)) document.head.removeChild(style);
       if (document.head.contains(tailwindScript)) document.head.removeChild(tailwindScript);
-      if (document.head.contains(emailjsScript)) document.head.removeChild(emailjsScript);
+      timelineItems.forEach(item => observer.unobserve(item));
     };
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // 1. まず Gemini API で控えメールの文章を生成する
-      const apiKey = "";
-      const systemPrompt = "あなたはアートイベント「対話型アート鑑賞会 〜モネと睡蓮 〜」の主催者です。参加申し込みをしたユーザーに対して、丁寧で温かい控えメールの文面を日本語で作成してください。";
-      const userQuery = `申し込み内容:\n名前: ${formData.name}\n紹介者: ${formData.introducer}\n年齢層: ${formData.ageGroup}\nメールアドレス: ${formData.email}\n連絡事項: ${formData.message}`;
-
-      const aiResponseRaw = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: userQuery }] }],
-          systemInstruction: { parts: [{ text: systemPrompt }] }
-        })
-      });
-
-      const result = await aiResponseRaw.json();
-      const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "お申し込みありがとうございました。";
-      setAiResponse(generatedText);
-
-      // 2. 実際にメールを送信する (EmailJS を使用)
-      // 注意: 下記の 'YOUR_SERVICE_ID' などを自分の ID に書き換える必要があります。
-      if (window.emailjs) {
-        // emailjs.init("YOUR_PUBLIC_KEY"); // ここにあなたのPublic Keyを入れる
-        // await emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-        //   to_email: formData.email,
-        //   admin_email: "kouichiro.makita@gmail.com",
-        //   from_name: "Art Dialogue 主催者",
-        //   user_name: formData.name,
-        //   user_email: formData.email,
-        //   introducer: formData.introducer,
-        //   age: formData.ageGroup,
-        //   message_body: formData.message,
-        //   ai_generated_content: generatedText
-        // });
-        console.log("Email sending logic ready. Please set up EmailJS keys.");
-      }
-
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error("Submission failed:", error);
-      setAiResponse("お申し込みありがとうございました。画面上での控え表示となります。（実際のメール配送にはEmailJSの設定が必要です）");
-      setIsSubmitted(true);
-    } finally {
-      setIsSubmitting(false);
-      const applyForm = document.getElementById('apply-form');
-      if (applyForm) {
-        window.scrollTo({ top: applyForm.offsetTop - 100, behavior: 'smooth' });
-      }
-    }
-  };
+  }, [isReady]);
 
   if (!isReady) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400 italic">Reading Art...</div>;
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-serif text-slate-400 italic tracking-widest">Reading Art...</div>;
   }
 
   return (
@@ -165,14 +146,11 @@ const App = () => {
           <div className="text-xl md:text-2xl font-serif font-bold tracking-tighter cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             ART <span className="text-teal-600 font-sans">DIALOGUE</span>
           </div>
-          <a href="#apply-form" className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs md:text-sm font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
-            申し込む
-          </a>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-32 md:pt-0">
+      <section className="relative min-h-screen flex items-center justify-center pt-32 md:pt-0 text-slate-900">
         <div className="absolute inset-0 z-0">
           <div 
             className="absolute inset-0 bg-cover bg-center"
@@ -188,7 +166,7 @@ const App = () => {
             <span className="ml-2">知識ゼロから楽しむアート体験</span>
           </div>
           
-          <h1 className="text-5xl md:text-8xl font-serif mb-8 leading-[1.2] md:leading-tight tracking-tight text-slate-900 drop-shadow-sm">
+          <h1 className="text-5xl md:text-8xl font-serif mb-8 leading-[1.2] md:leading-tight tracking-tight drop-shadow-sm">
             対話型アート<br className="md:hidden" />鑑賞会<br />
             <span className="italic text-teal-700 block mt-2 md:inline md:mt-0">〜モネと睡蓮〜</span>
           </h1>
@@ -201,28 +179,33 @@ const App = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm md:text-base font-semibold">
             <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
               <IconCalendar />
-              <span>3/19(木) 19:30 - 21:00</span>
+              <span>3/15(土) 10:00 - 12:00</span>
             </div>
-            <div className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white">
-              <IconMapPin />
-              <span>六本木駅周辺</span>
-            </div>
+            <a 
+              href={MAP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full md:w-auto flex items-center justify-center gap-3 bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl border border-white hover:bg-teal-50 hover:border-teal-200 hover:-translate-y-1 transition-all duration-300 group"
+            >
+              <div className="text-teal-600 group-hover:scale-110 transition-transform">
+                <IconMapPin />
+              </div>
+              <span>麻布十番（BIRTH LAB）</span>
+              <IconExternalLink />
+            </a>
           </div>
 
           <div className="mt-12 md:mt-16">
-            <a href="#apply-form" className="inline-block w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-full text-lg md:text-xl font-bold hover:bg-teal-700 transition-all shadow-2xl">
-              イベントに参加する <span className="text-teal-400">¥1,000</span>
-            </a>
-            <p className="mt-6 text-xs md:text-sm text-slate-500 font-medium italic">※初心者・お一人様での参加も大歓迎です</p>
+            <p className="text-xs md:text-sm text-slate-500 font-medium italic">※初心者・お一人様での参加大歓迎</p>
           </div>
         </div>
       </section>
 
       {/* Concept Section */}
-      <section className="py-24 bg-white relative">
+      <section className="py-24 bg-white relative text-slate-900">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif mb-4 text-slate-900">対話型鑑賞（VTS）とは？</h2>
+            <h2 className="text-3xl md:text-4xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
             <div className="w-20 h-0.5 bg-teal-600 mx-auto"></div>
           </div>
           
@@ -236,7 +219,7 @@ const App = () => {
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bg} ${item.text}`}>
                   <item.icon />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-slate-900">{item.title}</h3>
+                <h3 className="text-xl font-bold mb-4">{item.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
@@ -263,17 +246,17 @@ const App = () => {
                         </div>
                         <div className="absolute -bottom-8 -right-8 md:-right-12 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-2xl border border-slate-100 animate-spin-slow z-10 hidden md:flex text-center">
                             <div className="p-2">
-                                <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase mb-1">Impressionism</p>
-                                <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none">Claude<br/>MONET</p>
+                                <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase mb-1 font-sans">Impressionism</p>
+                                <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none text-slate-900">Claude<br/>MONET</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="w-full lg:w-1/2">
-                    <div className="inline-block px-3 py-1 bg-teal-100 text-teal-700 text-[10px] font-bold tracking-widest uppercase rounded-full mb-6">About the Artist</div>
+                <div className="w-full lg:w-1/2 text-left">
+                    <div className="inline-block px-3 py-1 bg-teal-100 text-teal-700 text-[10px] font-bold tracking-widest uppercase rounded-full mb-6 font-sans">About the Artist</div>
                     <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-tight">「光の画家」モネ。<br />なぜ彼は睡蓮を描き続けたのか？</h2>
                     <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">
-                        クロード・モネは、移ろいゆく光の色を捉えようとした印象派の巨匠です。晩年の彼は、自宅の庭に作った「水の庭」にある睡蓮を、250点以上も描き続けました。
+                        クロード・モネは、刻一刻と移ろう光の表情を追い求め続けた、印象派の巨匠です。晩年、フランス・ジヴェルニーの自邸に自ら造り上げた「水の庭」の睡蓮を、200点以上にわたって描き続けました。白内障で視力を失いながらも、筆を置かなかった画家です。
                     </p>
                     <div className="space-y-4">
                         <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
@@ -290,174 +273,132 @@ const App = () => {
         </div>
       </section>
 
-      {/* Program Timeline */}
-      <section className="py-24 bg-white overflow-hidden">
+      {/* Program Timeline Section */}
+      <section className="py-32 bg-white overflow-hidden text-slate-900">
         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif mb-20 tracking-tight text-slate-900">当日のタイムライン</h2>
+            <h2 className="text-4xl md:text-5xl font-serif mb-24 tracking-tight">当日のタイムライン</h2>
+            
             <div className="relative">
-                <div className="absolute left-[15px] md:left-1/2 top-0 bottom-0 w-[2px] bg-teal-100 md:-ml-[1px]"></div>
-                {[
-                    { time: '19:30', title: 'イントロダクション', desc: 'モネの生涯や「睡蓮」の物語をわかりやすく5分で解説します。' },
-                    { time: '19:40', title: 'アイスブレイク', desc: '簡単なペアワークを通して、リラックスして話せる雰囲気をつくります。' },
-                    { time: '19:55', title: '対話型鑑賞', desc: '選りすぐりの2つの作品を、グループでじっくり紐解きます。' },
-                    { time: '20:45', title: '交流・振り返り', desc: '最後に感想をシェアし、アンケートを記入して終了です。' }
-                ].map((step, i) => (
-                    <div key={i} className={`relative mb-16 flex flex-col md:flex-row items-start ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                        <div className="absolute left-[15px] md:left-1/2 w-[12px] h-[12px] rounded-full bg-teal-600 md:-ml-[6px] mt-1.5 md:mt-2 z-10 ring-4 ring-white"></div>
-                        <div className={`pl-12 md:pl-0 md:w-1/2 ${i % 2 === 0 ? 'md:pl-16 text-left' : 'md:pr-16 md:text-right'}`}>
-                            <div className="text-teal-600 font-mono font-bold text-sm mb-1">{step.time}</div>
-                            <h3 className="text-xl font-bold mb-2 text-slate-900">{step.title}</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed max-w-sm md:ml-0 md:mr-0 inline-block">{step.desc}</p>
+                {/* 垂直線 */}
+                <div className="absolute left-[15px] md:left-1/2 top-4 bottom-4 w-[2px] bg-slate-100 md:-ml-[1px]"></div>
+                
+                <div className="space-y-24 relative text-left">
+                    {timelineSteps.map((step, i) => (
+                        <div 
+                          key={i} 
+                          data-index={i}
+                          className={`timeline-item flex flex-col md:flex-row items-start transition-all duration-700 ease-out ${
+                            activeTimelineStep === i 
+                            ? 'opacity-100 scale-100 translate-x-0' 
+                            : 'opacity-20 scale-95 translate-x-4 md:translate-x-0'
+                          } ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                        >
+                            {/* アニメーションドット */}
+                            <div className={`absolute left-[15px] md:left-1/2 w-[16px] h-[16px] rounded-full transition-all duration-500 md:-ml-[8px] mt-1.5 md:mt-4 z-10 ring-4 ring-white ${
+                              activeTimelineStep === i ? 'bg-teal-600 scale-125 shadow-[0_0_15px_rgba(20,184,166,0.5)]' : 'bg-slate-200'
+                            }`}></div>
+                            
+                            {/* カードコンテンツ */}
+                            <div className={`pl-12 md:pl-0 md:w-1/2 ${i % 2 === 0 ? 'md:pl-16 text-left' : 'md:pr-16 md:text-right'}`}>
+                                <div className={`inline-block font-mono font-bold text-sm px-4 py-1.5 rounded-full mb-4 transition-colors duration-500 ${
+                                  activeTimelineStep === i ? 'bg-teal-50 text-teal-600' : 'bg-slate-50 text-slate-400'
+                                }`}>
+                                  {step.time}
+                                </div>
+                                <div className={`p-8 rounded-[32px] border transition-all duration-500 ${
+                                  activeTimelineStep === i 
+                                  ? 'bg-white shadow-2xl shadow-teal-900/5 border-teal-100 scale-100' 
+                                  : 'bg-transparent border-transparent scale-95 blur-[1px]'
+                                }`}>
+                                    <h3 className="text-2xl font-bold mb-4 text-slate-900">{step.title}</h3>
+                                    <p className="text-base text-slate-500 leading-relaxed font-medium">
+                                      {step.desc}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </div>
       </section>
 
-      {/* Registration Form Section */}
-      <section id="apply-form" className="py-24 bg-teal-50/30 scroll-mt-20 border-y border-teal-100">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-white rounded-[40px] shadow-2xl border border-teal-100 overflow-hidden">
-            <div className="bg-slate-900 p-10 text-white text-center">
-              <h2 className="text-3xl font-serif mb-2 tracking-tight">参加申し込み</h2>
-              <p className="text-teal-400 text-sm font-bold tracking-widest uppercase font-sans">Registration</p>
-            </div>
-            
-            <div className="p-10">
-              {isSubmitted ? (
-                <div className="text-center py-10">
-                  <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <IconCheckCircle />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-slate-900">お申し込みありがとうございます。</h3>
-                  <p className="text-slate-600 mb-8 font-medium">控えメールを送信しました。</p>
-                  <div className="bg-slate-50 p-6 rounded-2xl text-left border border-slate-100 mb-8 whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-700 shadow-inner">
-                    <p className="font-bold text-xs text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-2">
-                      <IconMail /> 控えメールの内容
-                    </p>
-                    {aiResponse}
-                  </div>
-                  <button 
-                    onClick={() => setIsSubmitted(false)}
-                    className="text-teal-600 font-bold hover:underline transition-colors"
-                  >
-                    別の内容で申し込む
-                  </button>
+      {/* Access / Details Section */}
+      <section className="py-24 bg-white border-b border-slate-100 text-slate-900">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="bg-slate-900 rounded-[50px] overflow-hidden shadow-3xl text-white relative border border-white/5">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 blur-[80px]"></div>
+            <div className="grid lg:grid-cols-2">
+                <div className="p-12 md:p-16 text-left">
+                    <h2 className="text-3xl font-serif mb-10">開催概要</h2>
+                    <div className="space-y-8">
+                        <div className="flex gap-5">
+                            <IconCalendar />
+                            <div>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Date & Time</p>
+                                <p className="text-lg font-medium font-sans">3/15 (土) 10:00 - 12:00</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-5">
+                            <IconMapPin />
+                            <div>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Location</p>
+                                <p className="text-lg font-medium font-sans text-white">BIRTH LAB/WORK 麻布十番</p>
+                                <a 
+                                  href={MAP_URL} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-teal-400 mt-1 font-bold hover:underline font-sans group"
+                                >
+                                  Google Maps で見る <IconExternalLink />
+                                </a>
+                            </div>
+                        </div>
+                        <div className="flex gap-5">
+                            <IconCreditCard />
+                            <div>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Admission</p>
+                                <p className="text-2xl font-serif font-bold">¥1,000</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">名前 <span className="text-rose-500">*</span></label>
-                    <input 
-                      required
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="例：山田 太郎"
-                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
-                    />
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">紹介者 <span className="text-rose-500">*</span></label>
-                    <input 
-                      required
-                      type="text" 
-                      name="introducer"
-                      value={formData.introducer}
-                      onChange={handleInputChange}
-                      placeholder="紹介者の名前（いない場合は「なし」）"
-                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">年齢 <span className="text-rose-500">*</span></label>
-                    <select 
-                      required
-                      name="ageGroup"
-                      value={formData.ageGroup}
-                      onChange={handleInputChange}
-                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans bg-white appearance-none"
-                    >
-                      <option value="">選択してください</option>
-                      <option value="10代">10代</option>
-                      <option value="20代">20代</option>
-                      <option value="30代">30代</option>
-                      <option value="40代">40代</option>
-                      <option value="50代">50代</option>
-                      <option value="60代">60代</option>
-                      <option value="70代以上">70代以上</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">メールアドレス <span className="text-rose-500">*</span></label>
-                    <input 
-                      required
-                      type="email" 
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="example@mail.com"
-                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 font-sans">連絡事項</label>
-                    <textarea 
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      rows="4"
-                      placeholder="ご質問や事前に伝えておきたいことがあればご記入ください。"
-                      className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-sans"
-                    ></textarea>
-                  </div>
-
-                  <div className="pt-4">
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className={`w-full py-5 rounded-2xl font-bold text-lg text-white transition-all shadow-xl flex items-center justify-center gap-3 ${
-                        isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-teal-700 active:scale-95'
-                      }`}
-                    >
-                      {isSubmitting ? (
-                        <>送信中...</>
-                      ) : (
-                        <>送信内容を確認する</>
-                      )}
-                    </button>
-                    <p className="mt-4 text-center text-xs text-slate-400 font-medium tracking-tight font-sans">
-                      通知先: kouichiro.makita@gmail.com
-                    </p>
-                  </div>
-                </form>
-              )}
+                <div className="bg-teal-900/40 p-12 md:p-16 flex flex-col justify-center backdrop-blur-sm border-l border-white/5 text-white text-left">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                        <IconCheckCircle />
+                        こんな人におすすめ
+                    </h3>
+                    <ul className="space-y-3">
+                        {[
+                            "アートの知識を深めたい",
+                            "自分の感性を言葉にしたい",
+                            "日常を離れて癒やされたい",
+                            "新しい仲間と対話を楽しみたい"
+                        ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-2 text-sm text-teal-50/80 font-medium font-sans">
+                                <div className="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-white border-b border-slate-100">
+      <section className="py-24 bg-white border-b border-slate-100 text-slate-900">
         <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3 text-slate-900">
+            <h2 className="text-3xl font-serif text-center mb-12 flex items-center justify-center gap-3">
                 <IconHelp /> よくあるご質問
             </h2>
             <div className="grid gap-4">
-                {[
-                    { q: "一人での参加でも大丈夫ですか？", a: "はい。参加者の約7割がお一人様です。対話型鑑賞のワークを通じて自然と会話が生まれます。" },
-                    { q: "知識が全くないのですが...", a: "むしろ知識がない方が、純粋な視点で作品を楽しめるため大歓迎です。ファシリテーターが丁寧にガイドします。" },
-                    { q: "開催場所の詳細は？", a: "六本木駅から徒歩5分圏内の閑静なアートスペースです。申込完了メールにて地図をお送りします。" }
-                ].map((faq, i) => (
-                    <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-slate-900 transition-shadow hover:shadow-md">
-                        <p className="font-bold mb-3 flex gap-2 font-sans"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
-                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 font-sans">A. {faq.a}</p>
+                {faqItems.map((faq, i) => (
+                    <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-shadow hover:shadow-md">
+                        <p className="font-bold mb-3 flex gap-2 font-sans text-left"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 font-sans text-left">A. {faq.a}</p>
                     </div>
                 ))}
             </div>
@@ -470,14 +411,48 @@ const App = () => {
             <div className="font-serif font-bold text-white text-2xl tracking-tighter mb-4">
                 ART <span className="text-teal-600 font-sans">DIALOGUE</span>
             </div>
-            <div className="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-500 uppercase tracking-widest font-sans">
-                <a href="#" className="hover:text-teal-400 transition-colors">Privacy</a>
-                <a href="#" className="hover:text-teal-400 transition-colors">Contact</a>
-                <a href="#" className="hover:text-teal-400 transition-colors">Instagram</a>
+            <div className="flex justify-center gap-8 mb-8 text-xs font-bold text-slate-500 uppercase tracking-widest font-sans">
+                <button 
+                  onClick={() => setShowComingSoon(true)}
+                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none"
+                >
+                  Contact
+                </button>
+                <button 
+                  onClick={() => setShowComingSoon(true)}
+                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none"
+                >
+                  Instagram
+                </button>
             </div>
-            <p className="text-slate-600 text-[10px] font-bold tracking-widest uppercase font-sans">© 2024 Roppongi Art Dialogue Project</p>
+            <p className="text-slate-600 text-[10px] font-bold tracking-widest uppercase font-sans">© 2026 Art Dialogue Tokyo</p>
         </div>
       </footer>
+
+      {/* Coming Soon オーバーレイ */}
+      {showComingSoon && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            onClick={() => setShowComingSoon(false)}
+          ></div>
+          <div className="relative bg-white p-12 rounded-[40px] shadow-2xl border border-teal-100 max-w-sm w-full text-center animate-fade-in-up">
+            <button 
+              onClick={() => setShowComingSoon(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
+            >
+              <IconX />
+            </button>
+            <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <IconSparkles />
+            </div>
+            <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 tracking-tight">Coming Soon</h3>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+              現在、準備中です。<br />公開までしばらくお待ちください。
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
