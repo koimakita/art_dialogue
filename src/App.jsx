@@ -78,40 +78,22 @@ const App = () => {
   ];
 
   // Googleカレンダー登録URL
-  const getGoogleCalendarUrl = () => {
-    const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
-    const params = new URLSearchParams({
-      text: EVENT_DETAILS.title,
-      dates: `${EVENT_DETAILS.startTime}/${EVENT_DETAILS.endTime}`,
-      details: EVENT_DETAILS.description,
-      location: EVENT_DETAILS.location,
-    });
-    return `${baseUrl}&${params.toString()}`;
-  };
+  const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(EVENT_DETAILS.title)}&dates=${EVENT_DETAILS.startTime}/${EVENT_DETAILS.endTime}&details=${encodeURIComponent(EVENT_DETAILS.description)}&location=${encodeURIComponent(EVENT_DETAILS.location)}`;
 
-  // Appleカレンダー/iCal (.ics) ファイルのダウンロード
-  const downloadIcsFile = () => {
-    const icsContent = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "BEGIN:VEVENT",
-      `SUMMARY:${EVENT_DETAILS.title}`,
-      `LOCATION:${EVENT_DETAILS.location}`,
-      `DESCRIPTION:${EVENT_DETAILS.description}`,
-      `DTSTART:${EVENT_DETAILS.startTime}`,
-      `DTEND:${EVENT_DETAILS.endTime}`,
-      "END:VEVENT",
-      "END:VCALENDAR"
-    ].join("\n");
-
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute("download", "event.ics");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  // Appleカレンダー/iOS用 (.ics) データURL
+  const appleCalendarIcsUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent([
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Art Dialogue Tokyo//Event//JP",
+    "BEGIN:VEVENT",
+    `SUMMARY:${EVENT_DETAILS.title}`,
+    `LOCATION:${EVENT_DETAILS.location}`,
+    `DESCRIPTION:${EVENT_DETAILS.description}`,
+    `DTSTART:${EVENT_DETAILS.startTime}`,
+    `DTEND:${EVENT_DETAILS.endTime}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\n"))}`;
 
   useEffect(() => {
     const tailwindScript = document.createElement('script');
@@ -307,7 +289,7 @@ const App = () => {
                     <div className="inline-block px-3 py-1 bg-teal-100 text-teal-700 text-[10px] font-bold tracking-widest uppercase rounded-full mb-6 font-sans">About the Artist</div>
                     <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-tight">「光の画家」モネ。<br />なぜ彼は睡蓮を描き続けたのか？</h2>
                     <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">
-                        クロード・モネは、刻一刻と移ろう光の表情を追い求め続けた、印象派の巨匠です。晩年、フランス・ジヴェルニーの自邸に自ら造り上げた「水の庭」の睡蓮を、200点以上にわたって描き続けました。白内障で視力を失いながらも、筆を置かなかった画家です。
+                        クロード・モネは、刻一刻と移ろう光の表情を追い求め続けた、印象派の巨匠です。晩年, フランス・ジヴェルニーの自邸に自ら造り上げた「水の庭」の睡蓮を, 200点以上にわたって描き続けました。白内障で視力を失いながらも、筆を置かなかった画家です。
                     </p>
                     <div className="space-y-4 font-sans">
                         <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
@@ -389,22 +371,23 @@ const App = () => {
                                 <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold">Date & Time</p>
                                 <p className="text-lg font-medium">3/15 (土) 10:00 - 12:00</p>
                                 
-                                {/* カレンダー登録ボタン */}
+                                {/* カレンダー登録ボタン (モバイル対応済) */}
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <a 
-                                    href={getGoogleCalendarUrl()} 
+                                    href={googleCalendarUrl} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-bold transition-all"
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[11px] font-bold transition-all active:scale-95"
                                   >
                                     <IconPlus /> Googleカレンダーに追加
                                   </a>
-                                  <button 
-                                    onClick={downloadIcsFile}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                                  <a 
+                                    href={appleCalendarIcsUrl}
+                                    download="event.ics"
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[11px] font-bold transition-all active:scale-95"
                                   >
-                                    <IconPlus /> iOS / その他のカレンダー
-                                  </button>
+                                    <IconPlus /> iOS / Appleカレンダー
+                                  </a>
                                 </div>
                             </div>
                         </div>
