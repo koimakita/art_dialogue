@@ -34,6 +34,9 @@ const IconExternalLink = () => (
 const IconX = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
+const IconPlus = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+);
 
 const App = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,6 +45,15 @@ const App = () => {
   const [activeTimelineStep, setActiveTimelineStep] = useState(0);
 
   const MAP_URL = "https://maps.app.goo.gl/eiuerk9SsZFzgdep9";
+  
+  // イベント詳細
+  const EVENT_DETAILS = {
+    title: "対話型アート鑑賞会〜モネと睡蓮〜",
+    location: "BIRTH LAB/WORK 麻布十番",
+    startTime: "20260315T100000",
+    endTime: "20260315T120000",
+    description: "知識はいりません。必要なのは「あなたの目」だけ。巨匠モネの世界を、みんなで言葉にしながら旅しましょう。"
+  };
 
   const timelineSteps = [
     { time: '10:00', title: '自己紹介/アイスブレイク', desc: 'お互いを知ることでリラックスして話せる雰囲気をつくります。' },
@@ -65,8 +77,43 @@ const App = () => {
     }
   ];
 
+  // Googleカレンダー登録URL
+  const getGoogleCalendarUrl = () => {
+    const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
+    const params = new URLSearchParams({
+      text: EVENT_DETAILS.title,
+      dates: `${EVENT_DETAILS.startTime}/${EVENT_DETAILS.endTime}`,
+      details: EVENT_DETAILS.description,
+      location: EVENT_DETAILS.location,
+    });
+    return `${baseUrl}&${params.toString()}`;
+  };
+
+  // Appleカレンダー/iCal (.ics) ファイルのダウンロード
+  const downloadIcsFile = () => {
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "BEGIN:VEVENT",
+      `SUMMARY:${EVENT_DETAILS.title}`,
+      `LOCATION:${EVENT_DETAILS.location}`,
+      `DESCRIPTION:${EVENT_DETAILS.description}`,
+      `DTSTART:${EVENT_DETAILS.startTime}`,
+      `DTEND:${EVENT_DETAILS.endTime}`,
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ].join("\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", "event.ics");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   useEffect(() => {
-    // Tailwind CDNの注入
     const tailwindScript = document.createElement('script');
     tailwindScript.src = 'https://cdn.tailwindcss.com';
     document.head.appendChild(tailwindScript);
@@ -90,23 +137,24 @@ const App = () => {
     document.head.appendChild(style);
 
     tailwindScript.onload = () => {
-      window.tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['"Noto Serif JP"', 'serif'],
-              sans: ['"Noto Sans JP"', 'sans-serif'],
+      if (window.tailwind) {
+        window.tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                serif: ['"Noto Serif JP"', 'serif'],
+                sans: ['"Noto Sans JP"', 'sans-serif'],
+              }
             }
           }
-        }
-      };
+        };
+      }
       setTimeout(() => setIsReady(true), 100);
     };
 
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
 
-    // タイムラインの監視ロジック
     const observerOptions = {
       root: null,
       rootMargin: '-20% 0px -40% 0px',
@@ -122,14 +170,17 @@ const App = () => {
       });
     }, observerOptions);
 
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    timelineItems.forEach(item => observer.observe(item));
+    const timer = setTimeout(() => {
+      const timelineItems = document.querySelectorAll('.timeline-item');
+      timelineItems.forEach(item => observer.observe(item));
+    }, 500);
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer);
       if (document.head.contains(style)) document.head.removeChild(style);
       if (document.head.contains(tailwindScript)) document.head.removeChild(tailwindScript);
-      timelineItems.forEach(item => observer.unobserve(item));
+      observer.disconnect();
     };
   }, [isReady]);
 
@@ -138,7 +189,7 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden selection:bg-teal-100 selection:text-teal-900">
       
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-4 md:py-8'}`}>
@@ -161,7 +212,7 @@ const App = () => {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-teal-600/30 text-teal-700 text-[10px] md:text-xs tracking-widest uppercase font-bold rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-teal-600/30 text-teal-700 text-[10px] md:text-xs tracking-widest uppercase font-bold rounded-full bg-white/80 backdrop-blur-sm shadow-sm animate-fade-in-up">
             <IconSparkles />
             <span className="ml-2">知識ゼロから楽しむアート体験</span>
           </div>
@@ -196,7 +247,7 @@ const App = () => {
           </div>
 
           <div className="mt-12 md:mt-16">
-            <p className="text-xs md:text-sm text-slate-500 font-medium italic">※初心者・お一人様での参加大歓迎</p>
+            <p className="text-xs md:text-sm text-slate-500 font-medium italic opacity-60">※初心者・お一人様での参加大歓迎</p>
           </div>
         </div>
       </section>
@@ -205,18 +256,18 @@ const App = () => {
       <section className="py-24 bg-white relative text-slate-900">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
+            <h2 className="text-3xl md:text-5xl font-serif mb-4">対話型鑑賞（VTS）とは？</h2>
             <div className="w-20 h-0.5 bg-teal-600 mx-auto"></div>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
               { icon: IconMessage, title: "知識は不要", desc: "歴史や技法を覚える必要はありません。「何が見えるか」を話すことから始まります。", bg: "bg-teal-50", text: "text-teal-600" },
               { icon: IconSparkles, title: "新しい発見", desc: "自分以外の人の言葉を聞くことで、「そんな見方があったのか！」という驚きに出会えます。", bg: "bg-blue-50", text: "text-blue-600" },
               { icon: IconInfo, title: "正解はない", desc: "アートには1つの正解はありません。あなたの感じたことが、そのまま作品の一部になります。", bg: "bg-purple-50", text: "text-purple-600" }
             ].map((item, i) => (
-              <div key={i} className="p-8 bg-slate-50/50 rounded-[40px] border border-slate-100 hover:shadow-xl transition-all">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bg} ${item.text}`}>
+              <div key={i} className="p-8 bg-slate-50/50 rounded-[40px] border border-slate-100 hover:shadow-xl transition-all duration-500">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 mx-auto ${item.bg} ${item.text}`}>
                   <item.icon />
                 </div>
                 <h3 className="text-xl font-bold mb-4">{item.title}</h3>
@@ -247,7 +298,7 @@ const App = () => {
                         <div className="absolute -bottom-8 -right-8 md:-right-12 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-2xl border border-slate-100 animate-spin-slow z-10 hidden md:flex text-center">
                             <div className="p-2">
                                 <p className="text-[10px] font-bold text-teal-600 tracking-widest uppercase mb-1 font-sans">Impressionism</p>
-                                <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none text-slate-900">Claude<br/>MONET</p>
+                                <p className="text-lg md:text-xl font-serif font-bold tracking-tighter leading-none text-slate-900 text-center">Claude<br/>MONET</p>
                             </div>
                         </div>
                     </div>
@@ -258,14 +309,14 @@ const App = () => {
                     <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">
                         クロード・モネは、刻一刻と移ろう光の表情を追い求め続けた、印象派の巨匠です。晩年、フランス・ジヴェルニーの自邸に自ら造り上げた「水の庭」の睡蓮を、200点以上にわたって描き続けました。白内障で視力を失いながらも、筆を置かなかった画家です。
                     </p>
-                    <div className="space-y-4">
+                    <div className="space-y-4 font-sans">
                         <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
                             <div className="text-teal-600 font-bold text-lg">01</div>
-                            <p className="text-sm md:text-base font-bold text-slate-700">刻一刻と変化する「水面の光」の表現</p>
+                            <p className="text-sm md:text-base font-bold text-slate-700 text-left">刻一刻と変化する「水面の光」の表現</p>
                         </div>
                         <div className="flex gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-teal-200 transition-colors">
                             <div className="text-teal-600 font-bold text-lg">02</div>
-                            <p className="text-sm md:text-base font-bold text-slate-700">形ではなく、空気感を描き出そうとした情熱</p>
+                            <p className="text-sm md:text-base font-bold text-slate-700 text-left">形ではなく、空気感を描き出そうとした情熱</p>
                         </div>
                     </div>
                 </div>
@@ -282,7 +333,7 @@ const App = () => {
                 {/* 垂直線 */}
                 <div className="absolute left-[15px] md:left-1/2 top-4 bottom-4 w-[2px] bg-slate-100 md:-ml-[1px]"></div>
                 
-                <div className="space-y-24 relative text-left">
+                <div className="space-y-24 relative text-left font-sans">
                     {timelineSteps.map((step, i) => (
                         <div 
                           key={i} 
@@ -323,7 +374,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Access / Details Section */}
+      {/* Access / Recommended Section */}
       <section className="py-24 bg-white border-b border-slate-100 text-slate-900">
         <div className="max-w-4xl mx-auto px-6">
           <div className="bg-slate-900 rounded-[50px] overflow-hidden shadow-3xl text-white relative border border-white/5">
@@ -331,24 +382,42 @@ const App = () => {
             <div className="grid lg:grid-cols-2">
                 <div className="p-12 md:p-16 text-left">
                     <h2 className="text-3xl font-serif mb-10">開催概要</h2>
-                    <div className="space-y-8">
+                    <div className="space-y-8 font-sans">
                         <div className="flex gap-5">
                             <IconCalendar />
                             <div>
-                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Date & Time</p>
-                                <p className="text-lg font-medium font-sans">3/15 (土) 10:00 - 12:00</p>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold">Date & Time</p>
+                                <p className="text-lg font-medium">3/15 (土) 10:00 - 12:00</p>
+                                
+                                {/* カレンダー登録ボタン */}
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  <a 
+                                    href={getGoogleCalendarUrl()} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-bold transition-all"
+                                  >
+                                    <IconPlus /> Googleカレンダーに追加
+                                  </a>
+                                  <button 
+                                    onClick={downloadIcsFile}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                                  >
+                                    <IconPlus /> iOS / その他のカレンダー
+                                  </button>
+                                </div>
                             </div>
                         </div>
                         <div className="flex gap-5">
                             <IconMapPin />
                             <div>
-                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Location</p>
-                                <p className="text-lg font-medium font-sans text-white">BIRTH LAB/WORK 麻布十番</p>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold">Location</p>
+                                <p className="text-lg font-medium text-white">BIRTH LAB/WORK 麻布十番</p>
                                 <a 
                                   href={MAP_URL} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs text-teal-400 mt-1 font-bold hover:underline font-sans group"
+                                  className="inline-flex items-center gap-1 text-xs text-teal-400 mt-1 font-bold hover:underline group"
                                 >
                                   Google Maps で見る <IconExternalLink />
                                 </a>
@@ -357,7 +426,7 @@ const App = () => {
                         <div className="flex gap-5">
                             <IconCreditCard />
                             <div>
-                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold font-sans">Admission</p>
+                                <p className="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold">Admission</p>
                                 <p className="text-2xl font-serif font-bold">¥1,000</p>
                             </div>
                         </div>
@@ -365,18 +434,18 @@ const App = () => {
                 </div>
 
                 <div className="bg-teal-900/40 p-12 md:p-16 flex flex-col justify-center backdrop-blur-sm border-l border-white/5 text-white text-left">
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3 font-sans">
                         <IconCheckCircle />
                         こんな人におすすめ
                     </h3>
-                    <ul className="space-y-3">
+                    <ul className="space-y-3 font-sans">
                         {[
                             "アートの知識を深めたい",
                             "自分の感性を言葉にしたい",
                             "日常を離れて癒やされたい",
                             "新しい仲間と対話を楽しみたい"
                         ].map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm text-teal-50/80 font-medium font-sans">
+                            <li key={i} className="flex items-center gap-2 text-sm text-teal-50/80 font-medium">
                                 <div className="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
                                 {item}
                             </li>
@@ -396,9 +465,9 @@ const App = () => {
             </h2>
             <div className="grid gap-4">
                 {faqItems.map((faq, i) => (
-                    <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-shadow hover:shadow-md">
-                        <p className="font-bold mb-3 flex gap-2 font-sans text-left"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
-                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 font-sans text-left">A. {faq.a}</p>
+                    <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-shadow hover:shadow-md font-sans">
+                        <p className="font-bold mb-3 flex gap-2 text-left"><span className="text-teal-600 font-bold tracking-tighter">Q.</span> {faq.q}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed ml-6 border-l-2 border-slate-200 pl-4 text-left">A. {faq.a}</p>
                     </div>
                 ))}
             </div>
@@ -406,21 +475,21 @@ const App = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 bg-slate-900 text-white">
+      <footer className="py-16 bg-slate-900 text-white font-sans">
         <div className="max-w-6xl mx-auto px-6 text-center">
             <div className="font-serif font-bold text-white text-2xl tracking-tighter mb-4">
                 ART <span className="text-teal-600 font-sans">DIALOGUE</span>
             </div>
-            <div className="flex justify-center gap-8 mb-8 text-xs font-bold text-slate-500 uppercase tracking-widest font-sans">
+            <div className="flex justify-center gap-8 mb-8 text-xs font-bold text-slate-500 uppercase tracking-widest">
                 <button 
                   onClick={() => setShowComingSoon(true)}
-                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none"
+                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none uppercase"
                 >
                   Contact
                 </button>
                 <button 
                   onClick={() => setShowComingSoon(true)}
-                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none"
+                  className="hover:text-teal-400 transition-colors cursor-pointer outline-none uppercase"
                 >
                   Instagram
                 </button>
@@ -429,14 +498,14 @@ const App = () => {
         </div>
       </footer>
 
-      {/* Coming Soon オーバーレイ */}
+      {/* Coming Soon Overlay */}
       {showComingSoon && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
           <div 
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
             onClick={() => setShowComingSoon(false)}
           ></div>
-          <div className="relative bg-white p-12 rounded-[40px] shadow-2xl border border-teal-100 max-w-sm w-full text-center animate-fade-in-up">
+          <div className="relative bg-white p-12 rounded-[40px] shadow-2xl border border-teal-100 max-w-sm w-full text-center animate-fade-in-up font-sans">
             <button 
               onClick={() => setShowComingSoon(false)}
               className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
@@ -447,7 +516,7 @@ const App = () => {
               <IconSparkles />
             </div>
             <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 tracking-tight">Coming Soon</h3>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+            <p className="text-slate-500 text-sm font-medium leading-relaxed text-center">
               現在、準備中です。<br />公開までしばらくお待ちください。
             </p>
           </div>
